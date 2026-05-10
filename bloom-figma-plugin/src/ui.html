@@ -1,0 +1,1962 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bloom</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+      :root {
+        --bg: #f5eefc;
+        --bg-elevated: #ffffff;
+        --card: #f2e8fb;
+        --card-hover: #ecdff9;
+        --border: #e5d4f7;
+        --accent: #7b2cbf;
+        --accent-hover: #8e46cb;
+        --accent-soft: rgba(123, 44, 191, 0.18);
+        --text: #2a1747;
+        --muted: #6f5d89;
+        --input-bg: #ffffff;
+        --radius: 12px;
+        --error: #d13b66;
+        --success: #0e9f6e;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 13px;
+        line-height: 1.35;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+
+      .view {
+        display: none;
+        flex-direction: column;
+        height: 100%;
+        padding: 22px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        background: transparent;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-size: 35px;
+        font-weight: 800;
+        letter-spacing: 0.1px;
+      }
+
+      .brand-mark {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        display: block;
+        object-fit: cover;
+        box-shadow: 0 0 0 1px rgba(82, 34, 133, 0.2);
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .small {
+        font-size: 12px;
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 10px 0 6px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .top-bar {
+        margin-bottom: 12px;
+      }
+
+      .link {
+        border: none;
+        background: transparent;
+        color: var(--accent);
+        padding: 0;
+        cursor: pointer;
+        font-size: 11px;
+        transition: opacity 0.15s ease;
+      }
+
+      .link:hover {
+        opacity: 0.85;
+      }
+
+      .settings-link {
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 0;
+        font-size: 11px;
+        transition: color 0.15s ease;
+      }
+
+      .settings-link:hover {
+        color: var(--text);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        padding: 10px 16px;
+        width: 100%;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        box-shadow: 0 8px 18px rgba(123, 44, 191, 0.24);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(123, 44, 191, 0.3);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: var(--bg-elevated);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 16px;
+        width: 100%;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .btn-secondary:hover {
+        background: var(--card-hover);
+      }
+
+      input,
+      textarea {
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        padding: 10px 12px;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+
+      textarea {
+        resize: none;
+        min-height: 110px;
+      }
+
+      .error {
+        color: var(--error);
+        margin-top: 8px;
+      }
+
+      .brand-list {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 8px;
+        max-height: 240px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+      }
+
+      .brand-card {
+        border: 1px solid #d4ccdf;
+        border-radius: var(--radius);
+        background: #ffffff;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .brand-card:hover {
+        border-color: #bbb0cd;
+        background: #fbf9ff;
+      }
+
+      .brand-card.selected {
+        border: 2px solid var(--accent);
+        background: #ead9fb;
+        box-shadow: 0 0 0 1px rgba(123, 44, 191, 0.16);
+      }
+
+      .brand-card > div:first-child {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .brand-card:last-child {
+        margin-bottom: 0;
+      }
+
+      .skeleton {
+        height: 52px;
+        border-radius: var(--radius);
+        background: #efe4fb;
+        background-size: 200% 100%;
+        animation: pulse 1.4s ease infinite;
+        margin-bottom: 8px;
+      }
+
+      .pill {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg-elevated);
+        color: var(--text);
+        padding: 6px 11px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .pill.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #ffffff;
+      }
+
+      .variant-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg-elevated);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .variant-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #ffffff;
+      }
+
+      .frame-pill {
+        width: 100%;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .progress-wrap {
+        width: 100%;
+        background: rgba(123, 44, 191, 0.14);
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 14px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        transition: width 0.3s ease;
+      }
+
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border);
+        border-top-color: #9074ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .spinner-sm {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(123, 44, 191, 0.22);
+        border-top-color: #7b2cbf;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .results-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin: 8px 0 12px;
+      }
+
+      .image-cell {
+        border: 2px solid transparent;
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: #f4ebff;
+        position: relative;
+        min-height: 120px;
+        cursor: pointer;
+      }
+
+      .image-cell.selected {
+        border-color: var(--accent);
+      }
+
+      .image-cell img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .placeholder {
+        position: absolute;
+        inset: 0;
+        background: #f1e5ff;
+      }
+
+      .thumb-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 6px;
+      }
+
+      .thumb {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 7px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+      }
+
+      .toast {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ffffff;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        z-index: 20;
+      }
+
+      .toast.error {
+        background: #ffe7ef;
+        border-color: var(--error);
+        color: #8b1638;
+      }
+
+      #brand-select .brand,
+      #generator .brand,
+      #results .brand {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="setup" class="view">
+      <div class="brand"><img class="brand-mark" src="https://www.trybloom.ai/logos/pwa/icon-512.png" alt="Bloom logo" /> Bloom</div>
+      <div class="title">Connect your Bloom account</div>
+      <div class="muted small">Generate on-brand images inside Figma</div>
+
+      <div style="margin-top: 16px">
+        <label class="muted small">API Key</label>
+        <input id="api-key-input" type="password" placeholder="bloom_sk_..." />
+        <div class="muted small" style="margin-top: 6px">Get your key: trybloom.ai/developers</div>
+        <div id="setup-error" class="error small" style="display: none"></div>
+      </div>
+
+      <div style="margin-top: 12px">
+        <button id="connect-btn" class="btn-primary">Connect</button>
+      </div>
+
+      <div style="margin-top: auto">
+        <button id="reset-key" class="settings-link">Reset key</button>
+      </div>
+    </div>
+
+    <div id="brand-select" class="view">
+      <div class="row top-bar">
+        <div class="brand" style="font-size: 16px">
+          <img class="brand-mark" src="https://www.trybloom.ai/logos/pwa/icon-512.png" alt="Bloom logo" />
+          Bloom
+        </div>
+        <button id="brand-settings" class="settings-link">Settings</button>
+      </div>
+      <div class="title" style="font-size: 13px">Your Brand</div>
+
+      <div id="brand-list" class="brand-list"></div>
+      <button id="toggle-add-brand" class="link" style="text-align: left">+ Add brand from URL</button>
+      <div id="add-brand-form" style="display: none; margin-top: 8px">
+        <div class="row">
+          <input id="brand-url-input" placeholder="https://example.com" />
+          <button id="add-brand-btn" class="btn-secondary" style="width: auto; white-space: nowrap">
+            Add Brand
+          </button>
+        </div>
+        <div id="add-brand-status" class="muted small" style="margin-top: 6px"></div>
+        <div id="add-brand-error" class="error small" style="display: none"></div>
+      </div>
+
+      <button id="continue-btn" class="btn-primary" disabled style="margin-top: 12px">Continue</button>
+    </div>
+
+    <div id="generator" class="view">
+      <div class="row top-bar">
+        <div class="brand" style="font-size: 16px">
+          <img class="brand-mark" src="https://www.trybloom.ai/logos/pwa/icon-512.png" alt="Bloom logo" />
+          Bloom
+        </div>
+        <button id="brand-back-link" class="link"></button>
+      </div>
+
+      <div id="frame-pill" class="frame-pill"></div>
+
+      <div id="brand-colors-wrap" style="display:none; margin-bottom: 12px;">
+        <div class="muted small" style="margin-bottom: 6px;">Brand Colors</div>
+        <div id="brand-colors-row" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <div class="muted small" style="margin-bottom: 6px;">Templates</div>
+        <div id="template-wrap" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+      </div>
+
+      <label class="muted small">Prompt</label>
+      <textarea id="prompt-input" rows="5" placeholder="Describe your image..."></textarea>
+      <div id="prompt-count" class="muted small" style="text-align: right; margin-top: 4px">0/500</div>
+      <div id="prompt-history-wrap" style="display:none; margin-top: 8px;">
+        <div class="muted small" style="margin-bottom: 4px;">Recent prompts</div>
+        <div id="prompt-history-chips" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+      </div>
+
+      <div class="row" style="margin-top: 10px">
+        <label class="muted small">Variants</label>
+        <div id="variant-wrap" style="display: flex; gap: 6px"></div>
+      </div>
+
+      <div style="margin-top: 10px">
+        <label class="muted small">Aspect Ratio</label>
+        <div id="ratio-wrap" style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap"></div>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <label class="muted small">Style Reference</label>
+          <button id="clear-reference-btn" class="link" style="display:none; font-size:10px;">
+            Clear
+          </button>
+        </div>
+        <div id="reference-empty" style="
+          border: 1px dashed var(--border);
+          border-radius: var(--radius);
+          padding: 10px;
+          text-align: center;
+          cursor: pointer;
+        " onclick="pickStyleReference()">
+          <div class="muted small">Select an image on canvas</div>
+          <div class="muted small" style="font-size:10px; margin-top:2px;">
+            then click to use as style reference
+          </div>
+        </div>
+        <div id="reference-preview" style="display:none; position:relative;">
+          <img id="reference-image" style="
+            width: 100%;
+            height: 60px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            border: 1px solid var(--accent);
+          " />
+          <div style="
+            position:absolute; top:4px; left:4px;
+            background: var(--accent);
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-weight: 600;
+          ">Style Reference</div>
+        </div>
+      </div>
+
+      <div id="credits" class="muted small" style="text-align: right; margin-top: 8px">Credits: --</div>
+      <button id="generate-btn" class="btn-primary" disabled style="margin-top: 10px">Generate</button>
+
+      <div id="recent-wrap" style="display: none; margin-top: 14px">
+        <div class="muted small">Recent</div>
+        <div id="recent-row" class="thumb-row"></div>
+      </div>
+    </div>
+
+    <div id="generating" class="view">
+      <button id="cancel-generation" class="link" style="text-align: left">Back</button>
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column">
+        <div class="spinner"></div>
+        <div style="margin-top: 16px; font-size: 14px; font-weight: 700">Generating your images...</div>
+        <div class="progress-wrap"><div id="generation-progress" class="progress-fill"></div></div>
+        <div id="generation-prompt" class="muted small" style="margin-top: 12px; font-style: italic"></div>
+        <div id="generation-meta" class="muted small" style="margin-top: 4px"></div>
+      </div>
+    </div>
+
+    <div id="results" class="view">
+      <div class="row top-bar">
+        <div class="brand" style="font-size: 16px">
+          <img class="brand-mark" src="https://www.trybloom.ai/logos/pwa/icon-512.png" alt="Bloom logo" />
+          Bloom
+        </div>
+        <button id="results-back" class="link">Back</button>
+      </div>
+      <div id="results-title" class="title" style="font-size: 13px"></div>
+      <div id="results-grid" class="results-grid"></div>
+      <div class="muted small" style="text-align:center; margin-bottom:8px;">
+        Double-click any image to preview full size
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <button id="insert-btn" class="btn-primary">Insert to canvas</button>
+        <button id="edit-toggle-btn" class="btn-secondary">Edit selected...</button>
+        <div id="edit-area" style="display: none">
+          <textarea id="edit-input" rows="2" placeholder="What would you like to change?"></textarea>
+          <button id="apply-edit-btn" class="btn-secondary" style="margin-top: 8px">Apply Edit</button>
+          <div id="edit-error" class="error small" style="display: none"></div>
+        </div>
+        <button id="regenerate-btn" class="btn-secondary">Regenerate</button>
+      </div>
+      <div class="muted small" style="text-align: center; margin-top: auto">Powered by Bloom · trybloom.ai</div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="zoom-overlay" style="
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    ">
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 12px;
+      ">
+        <div id="zoom-label" class="muted small"></div>
+        <button id="zoom-close" style="
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          color: var(--text);
+          padding: 4px 10px;
+          cursor: pointer;
+          font-size: 11px;
+        ">Close</button>
+      </div>
+      <img id="zoom-image" style="
+        max-width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+      " />
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button id="zoom-prev" class="btn-secondary" style="width:auto; padding: 6px 14px;">Prev</button>
+        <button id="zoom-next" class="btn-secondary" style="width:auto; padding: 6px 14px;">Next</button>
+        <button id="zoom-select" class="btn-primary" style="width:auto; padding: 6px 14px;">
+          Select this image
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const ANALYTICS_API_URL = 'https://lmgcqsfhbjkjclfsichh.supabase.co/functions/v1/track';
+
+      async function track(event, properties = {}) {
+        try {
+          await fetch(ANALYTICS_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              event,
+              properties,
+              timestamp: new Date().toISOString()
+            })
+          });
+        } catch (e) {
+          // silently fail — never block UX for analytics
+        }
+      }
+
+      const BLOOM_BASE = 'https://www.trybloom.ai/api/v1';
+      const BLOOM_ORIGIN = 'https://www.trybloom.ai';
+      const PROMPT_TEMPLATES = [
+        { label: 'Product', prompt: 'Clean product photography, white background, brand colors, professional lighting' },
+        { label: 'Hero', prompt: 'Wide cinematic hero banner, bold visual style, modern and striking' },
+        { label: 'Social', prompt: 'Bold social media graphic, vibrant on-brand colors, eye-catching composition' },
+        { label: 'Email', prompt: 'Professional email header, clean layout, warm brand tones, minimal design' },
+        { label: 'Sale', prompt: 'Promotional sale banner, energetic and bold, brand colors, clear focal point' },
+        { label: 'Lifestyle', prompt: 'Lifestyle photography, natural lighting, aspirational mood, brand aesthetic' },
+      ];
+      async function fetchBloom(path, apiKey, options = {}) {
+        const res = await fetch(`${BLOOM_BASE}${path}`, {
+          ...options,
+          headers: {
+            'x-api-key': apiKey,
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+          },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error((err && err.error && err.error.message) || `Bloom API error: ${res.status}`);
+        }
+        return res.json();
+      }
+      async function validateKey(apiKey) {
+        try {
+          await fetchBloom('/brands', apiKey);
+          return true;
+        } catch (_e) {
+          return false;
+        }
+      }
+      async function listBrands(apiKey) {
+        const data = await fetchBloom('/brands?limit=50', apiKey);
+        if (Array.isArray(data?.data?.brands)) return data.data.brands;
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data?.data)) return data.data;
+        if (Array.isArray(data?.brands)) return data.brands;
+        if (Array.isArray(data?.items)) return data.items;
+        if (Array.isArray(data?.results)) return data.results;
+        return [];
+      }
+      async function onboardBrand(apiKey, url) {
+        return fetchBloom('/brands', apiKey, { method: 'POST', body: JSON.stringify({ url }) });
+      }
+      async function getBrand(apiKey, brandId) {
+        return fetchBloom(`/brands/${brandId}`, apiKey);
+      }
+      function extractBrandColorHexes(payload) {
+        const normalizeHex = (value) => {
+          if (typeof value !== 'string') return '';
+          const trimmed = value.trim();
+          const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+          return /^#[0-9a-fA-F]{6}$/.test(withHash) || /^#[0-9a-fA-F]{3}$/.test(withHash)
+            ? withHash.toUpperCase()
+            : '';
+        };
+        const parseColor = (value) => {
+          if (!value) return '';
+          if (typeof value === 'string') return normalizeHex(value);
+          if (typeof value === 'object') {
+            return (
+              normalizeHex(value.hex) ||
+              normalizeHex(value.value) ||
+              normalizeHex(value.color) ||
+              normalizeHex(value.code)
+            );
+          }
+          return '';
+        };
+        const palette =
+          payload?.data?.colors ||
+          payload?.data?.brand?.colors ||
+          payload?.data?.palette ||
+          payload?.colors ||
+          payload?.brand?.colors ||
+          payload?.palette ||
+          [];
+        const hexes = Array.isArray(palette) ? palette.map(parseColor).filter(Boolean) : [];
+        return [...new Set(hexes)];
+      }
+      async function loadBrandColors() {
+        const wrap = document.getElementById('brand-colors-wrap');
+        const row = document.getElementById('brand-colors-row');
+        if (!wrap || !row || !apiKey || !brandId) return;
+        row.innerHTML = '';
+        wrap.style.display = 'none';
+        try {
+          const brandData = await getBrand(apiKey, brandId);
+          const colors = extractBrandColorHexes(brandData);
+          if (!colors.length) return;
+          colors.forEach((hex) => {
+            const swatch = document.createElement('div');
+            swatch.style.width = '24px';
+            swatch.style.height = '24px';
+            swatch.style.borderRadius = '4px';
+            swatch.style.background = hex;
+            swatch.style.border = '1px solid rgba(255,255,255,0.1)';
+            swatch.style.cursor = 'pointer';
+            swatch.title = hex;
+            swatch.onclick = async () => {
+              const copied = await copyTextToClipboard(hex);
+              if (copied) {
+                showToast(`Copied ${hex}`);
+              } else {
+                showToast('Failed to copy color', true);
+              }
+            };
+            row.appendChild(swatch);
+          });
+          wrap.style.display = 'block';
+        } catch (_e) {
+          wrap.style.display = 'none';
+        }
+      }
+      async function listGeneratedImages(apiKey, brand) {
+        const brandSessionId = resolveBrandSessionId(brand);
+        const params = new URLSearchParams({
+          limit: '12',
+          source: 'generated',
+          status: 'completed',
+          includeUrls: 'true',
+        });
+        if (brandSessionId) {
+          params.set('brandSessionId', brandSessionId);
+        }
+        const data = await fetchBloom(`/images?${params.toString()}`, apiKey);
+        if (!Array.isArray(data?.data?.images)) {
+          throw new Error('Invalid /images response: expected data.images array');
+        }
+        console.log('[Bloom][listGeneratedImages] fetched images:', data.data.images);
+        return data.data.images;
+      }
+      function resolveBrandSessionId(brand) {
+        return (
+          brand?.brandSessionId ||
+          brand?.brand_session_id ||
+          brand?.sessionId ||
+          brand?.session_id ||
+          brand?.id ||
+          ''
+        );
+      }
+      async function generateImages(apiKey, brand, prompt, variants, aspectRatio) {
+        const brandSessionId = resolveBrandSessionId(brand);
+        if (!brandSessionId) {
+          throw new Error('Missing brand session ID. Re-select your brand and try again.');
+        }
+        const data = await fetchBloom('/images/generations', apiKey, {
+          method: 'POST',
+          body: JSON.stringify({
+            prompt,
+            brandSessionId,
+            aspectRatio,
+            imageSize: '2K',
+            model: 'fast',
+            variantCount: variants,
+            referenceImageIds: [],
+          }),
+        });
+        if (!Array.isArray(data?.data?.ids)) {
+          throw new Error('Invalid /images/generations response: expected data.ids array');
+        }
+        console.log('[Bloom][generateImages] image ids:', data.data.ids);
+        return data.data.ids.map((id) => ({ id }));
+      }
+      async function getImage(apiKey, imageId) {
+        const data = await fetchBloom(`/images/${imageId}?wait=true&timeout=120`, apiKey);
+        if (!data?.data || typeof data.data !== 'object') {
+          throw new Error('Invalid /images/{id} response: expected data object');
+        }
+        console.log('[Bloom][getImage] image payload:', data.data);
+        return data.data;
+      }
+      async function listImagesByIds(apiKey, imageIds, wait = true) {
+        const params = new URLSearchParams({
+          ids: imageIds.join(','),
+          wait: wait ? 'true' : 'false',
+          timeout: '120',
+          includeUrls: 'true',
+        });
+        const data = await fetchBloom(`/images?${params.toString()}`, apiKey);
+        if (!Array.isArray(data?.data?.images)) {
+          throw new Error('Invalid /images response: expected data.images array');
+        }
+        console.log('[Bloom][listImagesByIds] ids requested:', imageIds, 'images received:', data.data.images);
+        return data.data.images;
+      }
+      function getImageId(image) {
+        return image?.id || '';
+      }
+      function getImageStatus(image) {
+        return image?.status || '';
+      }
+      function getImageUrl(image) {
+        const url = image?.imageUrl || image?.url || image?.image_url || '';
+        console.log('[Bloom][getImageUrl] image id/url:', image?.id, url);
+        if (!url) return '';
+        if (/^https?:\/\//i.test(url)) return url;
+        if (url.startsWith('//')) return `https:${url}`;
+        if (url.startsWith('/')) return `https://www.trybloom.ai${url}`;
+        return url;
+      }
+      async function pollForImageUrl(imageId, imgEl, placeholderEl) {
+        for (let i = 0; i < 30; i++) {
+          await new Promise((r) => setTimeout(r, 2000));
+          try {
+            const fresh = await getImage(apiKey, imageId);
+            const url = getImageUrl(fresh);
+            console.log('[Bloom][pollForImageUrl] attempt/url:', i + 1, imageId, url);
+            if (url) {
+              const idx = currentResults.findIndex((r) => r.id === imageId);
+              if (idx >= 0) currentResults[idx] = { ...currentResults[idx], ...fresh, url };
+              imgEl.src = url;
+              imgEl.onload = () => placeholderEl && placeholderEl.remove();
+              imgEl.onerror = () => {
+                console.log('[Bloom][pollForImageUrl] image.onerror -> FETCH_IMAGE_DATA', imageId, url);
+                postToCode({ type: 'FETCH_IMAGE_DATA', imageId, imageUrl: url });
+              };
+              return;
+            }
+          } catch (e) {
+            console.log('[Bloom][pollForImageUrl] error:', imageId, e);
+          }
+        }
+      }
+      async function pollImages(apiKey, imageIds, onProgress) {
+        if (!imageIds.length) {
+          throw new Error('No images were returned by the generation API');
+        }
+        const results = await listImagesByIds(apiKey, imageIds, true);
+        onProgress(100);
+        return results;
+      }
+      async function editImage(apiKey, imageId, instruction) {
+        return fetchBloom(`/images/${imageId}/edit`, apiKey, {
+          method: 'POST',
+          body: JSON.stringify({ instruction }),
+        });
+      }
+      async function checkCredits(apiKey) {
+        let workspaceId =
+          selectedBrand?.workspaceId ||
+          selectedBrand?.workspace_id ||
+          selectedBrand?.workspace?.id ||
+          '';
+        if (!workspaceId && brandId) {
+          try {
+            const fullBrand = await getBrand(apiKey, brandId);
+            if (fullBrand) {
+              selectedBrand = { ...(selectedBrand || {}), ...fullBrand };
+            }
+            workspaceId =
+              fullBrand?.workspaceId ||
+              fullBrand?.workspace_id ||
+              fullBrand?.workspace?.id ||
+              workspaceId;
+          } catch (_e) {
+            // best effort, continue with fallback requests
+          }
+        }
+        const parseCreditBalance = (data) => {
+          if (typeof data?.data?.balance === 'number') return data.data.balance;
+          if (typeof data?.balance === 'number') return data.balance;
+          if (typeof data?.credits === 'number') return data.credits;
+          if (typeof data?.remaining === 'number') return data.remaining;
+          return null;
+        };
+        if (workspaceId) {
+          const withWorkspace = await fetchBloom(
+            `/credits?workspaceId=${encodeURIComponent(workspaceId)}`,
+            apiKey,
+            { method: 'GET' }
+          );
+          const balance = parseCreditBalance(withWorkspace);
+          if (balance !== null) return balance;
+        }
+        const fallback = await fetchBloom('/credits', apiKey, { method: 'GET' });
+        const fallbackBalance = parseCreditBalance(fallback);
+        if (fallbackBalance !== null) return fallbackBalance;
+        return 0;
+      }
+
+      let apiKey = '';
+      let brandId = '';
+      let brandName = '';
+      let currentPrompt = '';
+      let currentVariants = 3;
+      let currentRatio = 'Auto';
+      let currentResults = [];
+      let frameWidth = 0;
+      let frameHeight = 0;
+      let frameName = '';
+      let selectedImageId = '';
+      let selectedBrand = null;
+      let brands = [];
+      let recentGeneratedSet = [];
+      let isGenerationCancelled = false;
+      let promptHistory = [];
+      let selectedNodeId = '';
+      let isReplaceMode = false;
+      let multiFrames = [];
+      let isBatchMode = false;
+      let batchProgress = 0;
+      let styleReferenceDataUrl = '';
+      let zoomIndex = 0;
+
+      try {
+        const savedHistory = localStorage.getItem('bloom_prompt_history');
+        if (savedHistory) {
+          const parsed = JSON.parse(savedHistory);
+          if (Array.isArray(parsed)) {
+            promptHistory = parsed.filter((entry) => typeof entry === 'string').slice(0, 10);
+          }
+        }
+      } catch (_e) {
+        promptHistory = [];
+      }
+
+      function showView(id) {
+        document.querySelectorAll('.view').forEach((v) => {
+          v.style.display = 'none';
+        });
+        document.getElementById(id).style.display = 'flex';
+
+        if (id === 'brand-select') {
+          selectedNodeId = '';
+          isReplaceMode = false;
+          isBatchMode = false;
+          multiFrames = [];
+          batchProgress = 0;
+          styleReferenceDataUrl = '';
+          const referenceEmpty = document.getElementById('reference-empty');
+          const referencePreview = document.getElementById('reference-preview');
+          const clearReferenceBtn = document.getElementById('clear-reference-btn');
+          if (referenceEmpty) referenceEmpty.style.display = 'block';
+          if (referencePreview) referencePreview.style.display = 'none';
+          if (clearReferenceBtn) clearReferenceBtn.style.display = 'none';
+          loadBrands();
+        }
+        if (id === 'generator') {
+          requestSelection();
+          loadCredits();
+          loadRecentGenerated();
+          renderRecent();
+          renderPromptHistory();
+          loadBrandColors();
+          document.getElementById('generate-btn').textContent = isBatchMode
+            ? `Fill ${multiFrames.length} Frames`
+            : isReplaceMode
+            ? 'Replace Image'
+            : 'Generate';
+        }
+      }
+
+      function postToCode(payload) {
+        parent.postMessage({ pluginMessage: payload }, '*');
+      }
+
+      function requestSelection() {
+        postToCode({ type: 'GET_SELECTION' });
+      }
+
+      function setButtonLoading(btn, loading, label) {
+        if (loading) {
+          btn.disabled = true;
+          btn.dataset.prevLabel = btn.textContent;
+          btn.innerHTML = '<span class="spinner-sm"></span>';
+        } else {
+          btn.disabled = false;
+          btn.textContent = label || btn.dataset.prevLabel || btn.textContent;
+        }
+      }
+
+      function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.className = isError ? 'toast error' : 'toast';
+        toast.textContent = isError ? message : message;
+        toast.style.display = 'inline-flex';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3000);
+      }
+
+      function detectAspectRatio(w, h) {
+        if (!w || !h) return '1:1';
+        const ratio = w / h;
+        if (Math.abs(ratio - 1) < 0.08) return '1:1';
+        if (Math.abs(ratio - 0.8) < 0.08) return '4:5';
+        if (Math.abs(ratio - 0.5625) < 0.08) return '9:16';
+        if (Math.abs(ratio - 1.778) < 0.1) return '16:9';
+        return '1:1';
+      }
+
+      function getEffectiveRatio() {
+        return currentRatio === 'Auto' ? detectAspectRatio(frameWidth, frameHeight) : currentRatio;
+      }
+
+      function truncate(text, max) {
+        return text.length <= max ? text : `${text.slice(0, max - 1)}…`;
+      }
+
+      function getEffectivePrompt() {
+        return styleReferenceDataUrl
+          ? `${currentPrompt}. Match the visual style, color palette, and mood of the reference image.`
+          : currentPrompt;
+      }
+
+      function pickStyleReference() {
+        postToCode({ type: 'GET_SELECTED_IMAGE_URL' });
+      }
+
+      function openZoom(index) {
+        zoomIndex = index;
+        renderZoom();
+        document.getElementById('zoom-overlay').style.display = 'flex';
+      }
+
+      function renderZoom() {
+        const img = currentResults[zoomIndex];
+        if (!img) return;
+        document.getElementById('zoom-image').src = img.url || '';
+        document.getElementById('zoom-label').textContent = `Image ${zoomIndex + 1} of ${currentResults.length}`;
+        document.getElementById('zoom-prev').disabled = zoomIndex === 0;
+        document.getElementById('zoom-next').disabled = zoomIndex === currentResults.length - 1;
+      }
+
+      function closeZoom() {
+        document.getElementById('zoom-overlay').style.display = 'none';
+      }
+
+      async function copyTextToClipboard(text) {
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+        } catch (_e) {
+          // fallback below
+        }
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          textarea.style.pointerEvents = 'none';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          const copied = document.execCommand('copy');
+          document.body.removeChild(textarea);
+          return copied;
+        } catch (_e) {
+          return false;
+        }
+      }
+
+      function renderPromptHistory() {
+        const wrap = document.getElementById('prompt-history-wrap');
+        const chips = document.getElementById('prompt-history-chips');
+        chips.innerHTML = '';
+        if (!promptHistory.length) {
+          wrap.style.display = 'none';
+          return;
+        }
+        wrap.style.display = 'block';
+        promptHistory.forEach((prompt) => {
+          const chip = document.createElement('button');
+          chip.style.cssText = `
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--muted);
+            padding: 3px 8px;
+            font-size: 10px;
+            cursor: pointer;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          `;
+          chip.textContent = prompt.length > 30 ? `${prompt.slice(0, 30)}…` : prompt;
+          chip.title = prompt;
+          chip.onclick = () => {
+            const textarea = document.getElementById('prompt-input');
+            textarea.value = prompt;
+            currentPrompt = prompt;
+            document.getElementById('prompt-count').textContent = `${prompt.length}/500`;
+            document.getElementById('generate-btn').disabled = false;
+          };
+          chips.appendChild(chip);
+        });
+      }
+
+      function renderTemplates() {
+        const wrap = document.getElementById('template-wrap');
+        wrap.innerHTML = '';
+        PROMPT_TEMPLATES.forEach((template) => {
+          const btn = document.createElement('button');
+          btn.style.cssText = `
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--text);
+            padding: 4px 10px;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+          `;
+          btn.textContent = template.label;
+          btn.title = template.prompt;
+          btn.onclick = () => {
+            const textarea = document.getElementById('prompt-input');
+            textarea.value = template.prompt;
+            currentPrompt = template.prompt;
+            document.getElementById('prompt-count').textContent = `${template.prompt.length}/500`;
+            document.getElementById('generate-btn').disabled = false;
+            document.querySelectorAll('#template-wrap button').forEach((b) => {
+              b.style.borderColor = 'var(--border)';
+              b.style.color = 'var(--text)';
+            });
+            btn.style.borderColor = 'var(--accent)';
+            btn.style.color = 'var(--accent)';
+          };
+          wrap.appendChild(btn);
+        });
+      }
+
+      async function loadBrands() {
+        const container = document.getElementById('brand-list');
+        container.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
+        try {
+          brands = await listBrands(apiKey);
+          container.innerHTML = '';
+          if (!brands.length) {
+            container.innerHTML = '<div class="muted small">No brands yet. Add one below.</div>';
+          }
+          brands.forEach((brand) => {
+            const card = document.createElement('div');
+            card.className = `brand-card${brand.id === brandId ? ' selected' : ''}`;
+            card.innerHTML = `
+              <div style="font-weight:700">${brand.name}</div>
+              <div class="muted small">${brand.url}</div>
+            `;
+            card.onclick = () => {
+              brandId = brand.id;
+              brandName = brand.name;
+              selectedBrand = brand;
+              document.querySelectorAll('.brand-card').forEach((el) => el.classList.remove('selected'));
+              card.classList.add('selected');
+              document.getElementById('continue-btn').disabled = false;
+            };
+            container.appendChild(card);
+          });
+
+          if (brandId) {
+            const matching = brands.find((b) => b.id === brandId);
+            if (matching) {
+              brandName = matching.name;
+              selectedBrand = matching;
+              document.getElementById('continue-btn').disabled = false;
+            }
+          }
+        } catch (e) {
+          container.innerHTML = `<div class="error small">${e.message || 'Failed to load brands'}</div>`;
+        }
+      }
+
+      async function loadCredits() {
+        if (!apiKey) return;
+        try {
+          const credits = await checkCredits(apiKey);
+          document.getElementById('credits').textContent = `Credits: ${credits}`;
+        } catch (e) {
+          const message = e?.message ? ` (${e.message})` : '';
+          document.getElementById('credits').textContent = `Credits: Error${message}`;
+        }
+      }
+
+      function renderFramePill() {
+        const el = document.getElementById('frame-pill');
+        if (isBatchMode && multiFrames.length > 0) {
+          el.innerHTML = `
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="color: var(--accent)">Batch</span>
+              <div>
+                <div style="font-size:11px; color:var(--accent); font-weight:600;">
+                  Batch mode — ${multiFrames.length} frames
+                </div>
+                <div style="font-size:10px; color:var(--muted);">
+                  ${multiFrames
+                    .map((f) => f.name)
+                    .slice(0, 3)
+                    .join(', ')}
+                  ${multiFrames.length > 3 ? ` +${multiFrames.length - 3} more` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          el.style.borderColor = 'var(--accent)';
+          return;
+        }
+        if (frameWidth && frameHeight) {
+          if (isReplaceMode) {
+            el.innerHTML = `
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="color:var(--accent)">Mode</span>
+                <div>
+                  <div style="font-size:11px; color:var(--accent); font-weight:600;">Replace mode</div>
+                  <div style="font-size:10px; color:var(--muted);">${frameName} · ${frameWidth}×${frameHeight}px</div>
+                </div>
+              </div>
+            `;
+            el.style.borderColor = 'var(--accent)';
+          } else {
+            el.innerHTML = `
+              <div>${frameName} · ${frameWidth}×${frameHeight}px</div>
+            `;
+            el.style.borderColor = 'var(--border)';
+          }
+        } else {
+          el.innerHTML = `
+            <div class="muted">No frame selected</div>
+            <div class="muted small" style="margin-top:2px">Select a frame or image layer on canvas</div>
+          `;
+          el.style.borderColor = 'var(--border)';
+        }
+      }
+
+      function renderVariants() {
+        const wrap = document.getElementById('variant-wrap');
+        wrap.innerHTML = '';
+        [1, 2, 3, 4].forEach((n) => {
+          const btn = document.createElement('button');
+          btn.className = `variant-btn${currentVariants === n ? ' active' : ''}`;
+          btn.textContent = String(n);
+          btn.onclick = () => {
+            currentVariants = n;
+            renderVariants();
+          };
+          wrap.appendChild(btn);
+        });
+      }
+
+      function renderRatios() {
+        const wrap = document.getElementById('ratio-wrap');
+        wrap.innerHTML = '';
+        ['Auto', '1:1', '4:5', '9:16', '16:9'].forEach((ratio) => {
+          const btn = document.createElement('button');
+          btn.className = `pill${currentRatio === ratio ? ' active' : ''}`;
+          btn.textContent = ratio;
+          btn.onclick = () => {
+            currentRatio = ratio;
+            renderRatios();
+          };
+          wrap.appendChild(btn);
+        });
+      }
+
+      async function loadRecentGenerated() {
+        if (!apiKey || !selectedBrand) return;
+        try {
+          const images = await listGeneratedImages(apiKey, selectedBrand);
+          const normalized = images
+            .map((img) => ({ ...img, id: getImageId(img), url: getImageUrl(img) }))
+            .filter((img) => img.id && img.url);
+          if (normalized.length) {
+            recentGeneratedSet = normalized;
+            renderRecent();
+          }
+        } catch (_e) {
+          // Keep the view usable even if listing previous images fails.
+        }
+      }
+
+      function renderRecent() {
+        const wrap = document.getElementById('recent-wrap');
+        const row = document.getElementById('recent-row');
+        row.innerHTML = '';
+        if (!recentGeneratedSet.length) {
+          wrap.style.display = 'none';
+          return;
+        }
+        wrap.style.display = 'block';
+        recentGeneratedSet.slice(0, 4).forEach((img) => {
+          if (!img.url) return;
+          const thumb = document.createElement('img');
+          thumb.className = 'thumb';
+          thumb.src = img.url;
+          thumb.dataset.imageId = img.id;
+          thumb.onerror = () => {
+            console.log('[Bloom][renderRecent] thumb error -> FETCH_IMAGE_DATA', img.id, img.url);
+            postToCode({ type: 'FETCH_IMAGE_DATA', imageId: img.id, imageUrl: img.url });
+          };
+          thumb.onclick = () => {
+            currentResults = [...recentGeneratedSet];
+            showResults();
+            showView('results');
+          };
+          row.appendChild(thumb);
+        });
+      }
+
+      function showResults() {
+        document.getElementById('results-title').textContent = `${currentResults.length} images ready`;
+        const grid = document.getElementById('results-grid');
+        grid.innerHTML = '';
+
+        if (currentResults.length === 1) {
+          grid.style.gridTemplateColumns = '1fr';
+        } else {
+          grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        }
+
+        const first = currentResults[0];
+        selectedImageId = first ? first.id : '';
+
+        currentResults.forEach((img) => {
+          const cell = document.createElement('div');
+          cell.className = `image-cell${img.id === selectedImageId ? ' selected' : ''}`;
+          
+          const placeholder = document.createElement('div');
+          placeholder.className = 'placeholder';
+          
+          const image = document.createElement('img');
+          image.loading = 'lazy';
+          
+          const url = getImageUrl(img);
+          
+          if (url) {
+            console.log('[Bloom][showResults] rendering image with url', img.id, url);
+            image.src = url;
+            image.onload = () => {
+              console.log('[Bloom][showResults] image loaded', img.id);
+              placeholder.remove();
+            };
+            image.onerror = () => {
+              console.log('[Bloom][showResults] image error -> FETCH_IMAGE_DATA', img.id, url);
+              postToCode({ type: 'FETCH_IMAGE_DATA', imageId: img.id, imageUrl: url });
+            };
+          } else {
+            console.log('[Bloom][showResults] missing url, polling', img.id);
+            placeholder.style.display = 'flex';
+            placeholder.style.alignItems = 'center';
+            placeholder.style.justifyContent = 'center';
+            placeholder.innerHTML = '<span class="spinner"></span>';
+            pollForImageUrl(img.id, image, placeholder);
+          };
+          
+          cell.appendChild(placeholder);
+          cell.appendChild(image);
+          cell.dataset.imageId = img.id;
+          cell.onclick = () => {
+            selectedImageId = img.id;
+            document.querySelectorAll('.image-cell').forEach((el) => el.classList.remove('selected'));
+            cell.classList.add('selected');
+          };
+          cell.ondblclick = (e) => {
+            e.stopPropagation();
+            openZoom(currentResults.indexOf(img));
+          };
+          grid.appendChild(cell);
+        });
+        document.getElementById('insert-btn').textContent = isReplaceMode ? 'Replace Image' : 'Insert to canvas';
+      }
+
+      async function runGeneration() {
+        const ratio = getEffectiveRatio();
+        const prompt = currentPrompt;
+        const effectivePrompt = getEffectivePrompt();
+        const variants = currentVariants;
+        document.getElementById('generation-progress').style.width = '0%';
+        document.getElementById('generation-prompt').textContent = `"${truncate(prompt, 50)}"`;
+        document.getElementById('generation-meta').textContent = `${variants} variants · ${ratio}`;
+
+        try {
+          const images = await generateImages(apiKey, selectedBrand, effectivePrompt, variants, ratio);
+          const ids = images.map((img) => getImageId(img)).filter(Boolean);
+          if (!ids.length) {
+            throw new Error('Bloom did not return image IDs. Please retry generation.');
+          }
+          const results = await pollImages(apiKey, ids, (pct) => {
+            document.getElementById('generation-progress').style.width = `${pct}%`;
+          });
+          if (isGenerationCancelled) {
+            isGenerationCancelled = false;
+            return;
+          }
+          if (results.some((r) => getImageStatus(r) === 'failed')) {
+            throw new Error('One or more images failed to generate');
+          }
+          const normalizedResults = results
+            .map((img) => ({ ...img, id: getImageId(img), url: getImageUrl(img) }))
+            .filter((img) => img.id);
+          console.log('[Bloom][runGeneration] normalized results:', normalizedResults);
+          if (!normalizedResults.length) {
+            throw new Error('Images were generated but no IDs were returned.');
+          }
+          track('generation_completed', { image_count: normalizedResults.length, brand_id: brandId });
+          currentResults = normalizedResults;
+          recentGeneratedSet = normalizedResults;
+          showResults();
+          showView('results');
+        } catch (e) {
+          if (isGenerationCancelled) {
+            isGenerationCancelled = false;
+            return;
+          }
+          track('generation_failed', { error: e.message });
+          showToast(e.message || 'Generation failed', true);
+          showView('generator');
+        }
+      }
+
+      async function runBatchGeneration() {
+        const totalFrames = multiFrames.length;
+        const batchItems = [];
+        const effectivePrompt = getEffectivePrompt();
+
+        document.getElementById('generation-progress').style.width = '0%';
+        document.getElementById('generation-prompt').textContent = `"${truncate(currentPrompt, 40)}"`;
+        document.getElementById('generation-meta').textContent = `Filling ${totalFrames} frames...`;
+
+        try {
+          for (let i = 0; i < totalFrames; i += 1) {
+            const frame = multiFrames[i];
+            const ratio = detectAspectRatio(frame.width, frame.height);
+
+            document.getElementById('generation-meta').textContent = `Generating frame ${i + 1} of ${totalFrames}: ${frame.name}`;
+
+            const images = await generateImages(apiKey, selectedBrand, effectivePrompt, 1, ratio);
+            const ids = images.map((img) => getImageId(img)).filter(Boolean);
+            if (!ids.length) throw new Error(`Failed for frame ${frame.name}`);
+
+            const results = await pollImages(apiKey, ids, (pct) => {
+              const overall = ((i + pct / 100) / totalFrames) * 100;
+              document.getElementById('generation-progress').style.width = `${overall}%`;
+            });
+
+            const url = getImageUrl(results[0]);
+            if (url) {
+              batchItems.push({
+                nodeId: frame.id,
+                imageUrl: url,
+                prompt: currentPrompt,
+                aspectRatio: ratio,
+              });
+            }
+            batchProgress = i + 1;
+          }
+
+          document.getElementById('generation-meta').textContent = 'Inserting into frames...';
+          postToCode({ type: 'BATCH_INSERT', items: batchItems });
+        } catch (error) {
+          const message = error?.message || 'Batch generation failed';
+          showToast(message, true);
+          showView('generator');
+        }
+      }
+
+      function bindEvents() {
+        const apiInput = document.getElementById('api-key-input');
+        const connectBtn = document.getElementById('connect-btn');
+        const setupError = document.getElementById('setup-error');
+        connectBtn.onclick = async () => {
+          const key = apiInput.value.trim();
+          if (!key) return;
+          setupError.style.display = 'none';
+          setButtonLoading(connectBtn, true);
+          const valid = await validateKey(key);
+          if (valid) {
+            apiKey = key;
+            postToCode({ type: 'SAVE_KEY', key });
+            track('api_key_connected');
+            await loadBrands();
+            showView('brand-select');
+          } else {
+            setupError.style.display = 'block';
+            setupError.textContent = 'Invalid API key';
+          }
+          setButtonLoading(connectBtn, false, 'Connect');
+        };
+
+        document.getElementById('reset-key').onclick = () => {
+          apiKey = '';
+          brandId = '';
+          brandName = '';
+          apiInput.value = '';
+          postToCode({ type: 'SAVE_KEY', key: '' });
+          postToCode({ type: 'SAVE_BRAND', brandId: '' });
+          showView('setup');
+        };
+
+        document.getElementById('brand-settings').onclick = () => showView('setup');
+        document.getElementById('toggle-add-brand').onclick = () => {
+          const form = document.getElementById('add-brand-form');
+          form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        };
+
+        document.getElementById('add-brand-btn').onclick = async () => {
+          const urlInput = document.getElementById('brand-url-input');
+          const status = document.getElementById('add-brand-status');
+          const error = document.getElementById('add-brand-error');
+          const btn = document.getElementById('add-brand-btn');
+          const rawUrl = urlInput.value.trim();
+          if (!rawUrl) return;
+          const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+          urlInput.value = url;
+          error.style.display = 'none';
+          setButtonLoading(btn, true);
+          status.textContent = 'Learning your brand...';
+          try {
+            const brand = await onboardBrand(apiKey, url);
+            track('brand_added', { url });
+            let readyBrand = brand;
+            for (let i = 0; i < 30; i += 1) {
+              const next = await getBrand(apiKey, brand.id);
+              readyBrand = next;
+              if (next.status === 'ready' || next.status === 'completed') {
+                break;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+            }
+            await loadBrands();
+            brandId = readyBrand.id;
+            brandName = readyBrand.name;
+            selectedBrand = readyBrand;
+            document.getElementById('continue-btn').disabled = false;
+            document.getElementById('add-brand-form').style.display = 'none';
+            urlInput.value = '';
+            status.textContent = '';
+          } catch (e) {
+            error.style.display = 'block';
+            error.textContent = e.message || 'Failed to add brand';
+            status.textContent = '';
+          }
+          setButtonLoading(btn, false, 'Add Brand');
+        };
+
+        document.getElementById('continue-btn').onclick = () => {
+          if (!brandId || !selectedBrand) return;
+          postToCode({ type: 'SAVE_BRAND', brandId });
+          track('brand_selected', { brand_id: selectedBrand.id, brand_name: selectedBrand.name });
+          document.getElementById('brand-back-link').textContent = selectedBrand.name;
+          showView('generator');
+        };
+
+        const promptInput = document.getElementById('prompt-input');
+        const promptCount = document.getElementById('prompt-count');
+        promptInput.oninput = () => {
+          if (promptInput.value.length > 500) {
+            promptInput.value = promptInput.value.slice(0, 500);
+          }
+          currentPrompt = promptInput.value;
+          promptCount.textContent = `${currentPrompt.length}/500`;
+          document.getElementById('generate-btn').disabled = !currentPrompt.trim();
+          document.querySelectorAll('#template-wrap button').forEach((b) => {
+            b.style.borderColor = 'var(--border)';
+            b.style.color = 'var(--text)';
+          });
+        };
+
+        document.getElementById('brand-back-link').onclick = () => showView('brand-select');
+        document.getElementById('generate-btn').onclick = () => {
+          if (!currentPrompt.trim()) return;
+          promptHistory = promptHistory.filter((p) => p !== currentPrompt);
+          promptHistory.unshift(currentPrompt);
+          promptHistory = promptHistory.slice(0, 10);
+          try {
+            localStorage.setItem('bloom_prompt_history', JSON.stringify(promptHistory));
+          } catch (_e) {
+            // ignore storage errors to keep generation flow smooth
+          }
+          renderPromptHistory();
+          if (isBatchMode && multiFrames.length > 0) {
+            track('generation_started', {
+              prompt: currentPrompt,
+              variants: multiFrames.length,
+              aspect_ratio: getEffectiveRatio(),
+              brand_id: brandId,
+              batch: true,
+            });
+            showView('generating');
+            runBatchGeneration();
+            return;
+          }
+          track('generation_started', {
+            prompt: currentPrompt,
+            variants: currentVariants,
+            aspect_ratio: getEffectiveRatio(),
+            brand_id: brandId,
+          });
+          showView('generating');
+          runGeneration();
+        };
+        document.getElementById('cancel-generation').onclick = () => {
+          isGenerationCancelled = true;
+          showView('generator');
+        };
+
+        document.getElementById('results-back').onclick = () => showView('generator');
+        document.getElementById('regenerate-btn').onclick = () => {
+          showView('generating');
+          runGeneration();
+        };
+
+        document.getElementById('insert-btn').onclick = () => {
+          const selected = currentResults.find((img) => img.id === selectedImageId);
+          if (!selected || !selected.url) {
+            showToast('Select an image first', true);
+            return;
+          }
+          const btn = document.getElementById('insert-btn');
+          setButtonLoading(btn, true);
+          if (isReplaceMode && selectedNodeId) {
+            postToCode({
+              type: 'REPLACE_IMAGE',
+              imageUrl: selected.url,
+              nodeId: selectedNodeId,
+              prompt: currentPrompt,
+              aspectRatio: getEffectiveRatio(),
+            });
+          } else {
+            postToCode({
+              type: 'INSERT_IMAGE',
+              imageUrl: selected.url,
+              frameWidth: frameWidth || 1200,
+              frameHeight: frameHeight || 628,
+              prompt: currentPrompt,
+              aspectRatio: getEffectiveRatio(),
+            });
+          }
+        };
+
+        document.getElementById('clear-reference-btn').onclick = () => {
+          styleReferenceDataUrl = '';
+          document.getElementById('reference-empty').style.display = 'block';
+          document.getElementById('reference-preview').style.display = 'none';
+          document.getElementById('clear-reference-btn').style.display = 'none';
+        };
+
+        document.getElementById('zoom-close').onclick = closeZoom;
+        document.getElementById('zoom-prev').onclick = () => {
+          if (zoomIndex > 0) {
+            zoomIndex -= 1;
+            renderZoom();
+          }
+        };
+        document.getElementById('zoom-next').onclick = () => {
+          if (zoomIndex < currentResults.length - 1) {
+            zoomIndex += 1;
+            renderZoom();
+          }
+        };
+        document.getElementById('zoom-select').onclick = () => {
+          const selected = currentResults[zoomIndex];
+          if (!selected) return;
+          selectedImageId = selected.id;
+          document.querySelectorAll('.image-cell').forEach((el) => el.classList.remove('selected'));
+          const cell = document.querySelector(`[data-image-id="${selectedImageId}"]`);
+          if (cell) cell.classList.add('selected');
+          closeZoom();
+        };
+        document.getElementById('zoom-overlay').onclick = (e) => {
+          if (e.target === document.getElementById('zoom-overlay')) closeZoom();
+        };
+        document.addEventListener('keydown', (e) => {
+          const overlay = document.getElementById('zoom-overlay');
+          if (overlay.style.display === 'none') return;
+          if (e.key === 'Escape') closeZoom();
+          if (e.key === 'ArrowLeft' && zoomIndex > 0) {
+            zoomIndex -= 1;
+            renderZoom();
+          }
+          if (e.key === 'ArrowRight' && zoomIndex < currentResults.length - 1) {
+            zoomIndex += 1;
+            renderZoom();
+          }
+        });
+
+        document.getElementById('edit-toggle-btn').onclick = () => {
+          const area = document.getElementById('edit-area');
+          area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        };
+
+        document.getElementById('apply-edit-btn').onclick = async () => {
+          const instruction = document.getElementById('edit-input').value.trim();
+          const error = document.getElementById('edit-error');
+          if (!instruction || !selectedImageId) return;
+          error.style.display = 'none';
+          const btn = document.getElementById('apply-edit-btn');
+          setButtonLoading(btn, true);
+          try {
+            let edited = await editImage(apiKey, selectedImageId, instruction);
+            for (let i = 0; i < 30; i += 1) {
+              if (edited.status === 'completed' || edited.status === 'failed') break;
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              edited = await getImage(apiKey, edited.id);
+            }
+            if (edited.status !== 'completed' || !edited.url) {
+              throw new Error('Edited image did not complete');
+            }
+            const idx = currentResults.findIndex((img) => img.id === selectedImageId);
+            if (idx >= 0) {
+              currentResults[idx] = edited;
+            }
+            track('image_edited', { brand_id: brandId });
+            showResults();
+            showToast('Image updated');
+          } catch (e) {
+            error.style.display = 'block';
+            error.textContent = e.message || 'Edit failed';
+          }
+          setButtonLoading(btn, false, 'Apply Edit');
+        };
+      }
+
+      window.onmessage = async (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+        switch (msg.type) {
+          case 'KEY_LOADED': {
+            if (msg.key) {
+              apiKey = msg.key;
+              document.getElementById('api-key-input').value = msg.key;
+              const valid = await validateKey(apiKey);
+              if (valid) {
+                showView('brand-select');
+              } else {
+                showView('setup');
+              }
+            } else {
+              showView('setup');
+            }
+            break;
+          }
+          case 'KEY_SAVED':
+            break;
+          case 'BRAND_LOADED':
+            if (msg.brandId) {
+              brandId = msg.brandId;
+            }
+            break;
+          case 'MULTI_FRAME_SELECTED':
+            multiFrames = msg.frames || [];
+            isBatchMode = true;
+            isReplaceMode = false;
+            selectedNodeId = '';
+            frameName = multiFrames[0]?.name || '';
+            frameWidth = multiFrames[0]?.width || 0;
+            frameHeight = multiFrames[0]?.height || 0;
+            renderFramePill();
+            document.getElementById('generate-btn').textContent = `Fill ${msg.count} Frames`;
+            break;
+          case 'FRAME_SELECTED':
+            frameWidth = Math.round(msg.width);
+            frameHeight = Math.round(msg.height);
+            frameName = msg.name;
+            selectedNodeId = msg.nodeId || '';
+            isReplaceMode = false;
+            isBatchMode = false;
+            multiFrames = [];
+            document.getElementById('generate-btn').textContent = 'Generate';
+            renderFramePill();
+            break;
+          case 'IMAGE_LAYER_SELECTED':
+            frameWidth = Math.round(msg.width);
+            frameHeight = Math.round(msg.height);
+            frameName = msg.name;
+            selectedNodeId = msg.nodeId || '';
+            isReplaceMode = true;
+            isBatchMode = false;
+            multiFrames = [];
+            document.getElementById('generate-btn').textContent = 'Replace Image';
+            renderFramePill();
+            break;
+          case 'NO_FRAME_SELECTED':
+            frameWidth = 0;
+            frameHeight = 0;
+            frameName = '';
+            selectedNodeId = '';
+            isReplaceMode = false;
+            isBatchMode = false;
+            multiFrames = [];
+            document.getElementById('generate-btn').textContent = 'Generate';
+            renderFramePill();
+            break;
+          case 'IMAGE_DATA_RESULT': {
+            console.log('[Bloom][window.onmessage] IMAGE_DATA_RESULT', msg.imageId);
+            const cell = document.querySelector(`[data-image-id="${msg.imageId}"]`);
+            if (cell && msg.dataUrl) {
+              const imgEl = cell.querySelector('img');
+              const placeholder = cell.querySelector('.placeholder');
+              if (imgEl) imgEl.src = msg.dataUrl;
+              if (placeholder) placeholder.remove();
+            }
+            const thumb = document.querySelector(`.thumb[data-image-id="${msg.imageId}"]`);
+            if (thumb && msg.dataUrl) thumb.src = msg.dataUrl;
+            break;
+          }
+          case 'IMAGE_DATA_ERROR': {
+            console.log('[Bloom][window.onmessage] IMAGE_DATA_ERROR', msg.imageId, msg.message);
+            const cell = document.querySelector(`[data-image-id="${msg.imageId}"]`);
+            if (cell) {
+              const placeholder = cell.querySelector('.placeholder');
+              if (placeholder) {
+                placeholder.style.background = '#1a1a1a';
+                placeholder.innerHTML =
+                  '<span class="muted small" style="padding:8px;text-align:center">Image unavailable</span>';
+                placeholder.style.display = 'flex';
+                placeholder.style.alignItems = 'center';
+                placeholder.style.justifyContent = 'center';
+              }
+            }
+            break;
+          }
+          case 'INSERT_SUCCESS': {
+            const btn = document.getElementById('insert-btn');
+            btn.textContent = 'Inserted';
+            track('image_inserted', { brand_id: brandId });
+            setTimeout(() => {
+              btn.textContent = isReplaceMode ? 'Replace Image' : 'Insert to canvas';
+              btn.disabled = false;
+            }, 900);
+            break;
+          }
+          case 'REPLACE_SUCCESS': {
+            const btn = document.getElementById('insert-btn');
+            btn.textContent = 'Replaced';
+            setTimeout(() => {
+              btn.textContent = isReplaceMode ? 'Replace Image' : 'Insert to canvas';
+              btn.disabled = false;
+            }, 900);
+            break;
+          }
+          case 'BATCH_COMPLETE':
+            track('generation_completed', {
+              image_count: multiFrames.length,
+              brand_id: brandId,
+              batch: true,
+            });
+            showToast(`${multiFrames.length} frames filled!`);
+            isBatchMode = false;
+            multiFrames = [];
+            showView('generator');
+            break;
+          case 'BATCH_ITEM_DONE':
+            batchProgress += 1;
+            break;
+          case 'BATCH_ERROR':
+            showToast(msg.message || 'Batch insert failed', true);
+            showView('generator');
+            break;
+          case 'SELECTED_IMAGE_URL':
+            styleReferenceDataUrl = msg.dataUrl;
+            document.getElementById('reference-empty').style.display = 'none';
+            document.getElementById('reference-preview').style.display = 'block';
+            document.getElementById('reference-image').src = msg.dataUrl;
+            document.getElementById('clear-reference-btn').style.display = 'block';
+            showToast('Style reference set');
+            break;
+          case 'SELECTED_IMAGE_URL_ERROR':
+            showToast('Select an image layer on canvas first', true);
+            break;
+          case 'INSERT_ERROR':
+            setButtonLoading(
+              document.getElementById('insert-btn'),
+              false,
+              isReplaceMode ? 'Replace Image' : 'Insert to canvas'
+            );
+            showToast(msg.message || 'Insert failed', true);
+            break;
+          case 'REPLACE_ERROR':
+            setButtonLoading(
+              document.getElementById('insert-btn'),
+              false,
+              isReplaceMode ? 'Replace Image' : 'Insert to canvas'
+            );
+            showToast(msg.message || 'Replace failed', true);
+            break;
+          default:
+            break;
+        }
+      };
+
+      track('plugin_opened');
+      bindEvents();
+      renderVariants();
+      renderRatios();
+      renderTemplates();
+      renderPromptHistory();
+      renderFramePill();
+      postToCode({ type: 'LOAD_KEY' });
+      postToCode({ type: 'LOAD_BRAND' });
+    </script>
+  </body>
+</html>
